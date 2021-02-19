@@ -1,0 +1,29 @@
+---
+title: NPM Commands
+tags:
+  - cmd
+  - npm
+emoji: ✏️
+created: Fri Feb 19 06:26:27 ICT 2021
+---
+
+# List all installed global packages
+
+```sh
+npm list -g --depth=0
+```
+
+# Remove all global packages
+
+```sh
+npm ls -gp --depth=0 | awk -F/ '/node_modules/ && !/\/npm$/ {print $NF}' | xargs npm -g rm
+```
+
+where:
+
+- `npm ls -gp --depth=0`  
+  List all installed packages
+- `awk -F/ '/node_modules/ && !/\/npm$/ {print $NF}'`  
+  print package dir
+- `xargs npm -g rm`  
+  remove package

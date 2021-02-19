@@ -1,0 +1,30 @@
+---
+title: Disable "MDS" to increase Mac Air (2013) performance
+tags:
+  - tip
+  - osx
+emoji: 🤩
+created: 2018-12-05
+---
+
+My Mac Air 2013 still alive, but its performance are worst. On internet they say I can disable `mds` to make Mac Air (2013) **FAST** again
+
+note: `mds` are tools for osx to indexing file. If we disable, it will effect speed on searching file, but we can run manual indexing.
+
+**to disable**
+
+```sh
+sudo mdutil -a -i off
+```
+
+**to check status**
+
+```sh
+mdutil -a -s -v
+```
+
+**to re-index** (must be overnight jobs)
+
+```sh
+sudo rm -rf /.Spotlight-V100/*
+```
