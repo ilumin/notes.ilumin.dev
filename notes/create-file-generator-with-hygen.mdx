@@ -1,0 +1,68 @@
+---
+title: Create file generator with Hygen
+modified: 2021-02-19T18:24:00.000Z
+tags:
+  - workflow
+  - development
+emoji: 😈
+---
+
+## Install
+
+```sh
+yarn add -D hygen
+```
+
+## Initialize Hygen
+
+```sh
+./node_modules/.bin/hygen init self
+```
+
+Hygen will generate files in `_templates`
+
+## Create New Generator
+
+```sh
+./node_modules/.bin/hygen generator new notes # create simple generator
+./node_modules/.bin/hygen generator with-prompt notes # create prompt generator
+```
+
+Hygen will generate files use for our generator name `notes`
+
+- `generator new` will create file `_templates/notes/new/hello.ejs.t`
+- `generator with-prompt` will create file `_templates/notes/with-prompt/hello.ejs.t` and `_templates/notes/with-prompt/prompt.js`
+
+you might notice, all file are generate from `_templates/generator`
+
+## Cli
+
+```sh
+hygen [GENERATOR] [ACTION] [NAME]
+```
+
+- `[GENERATOR]` = are template use for generate file
+- `[ACTION]` = action to do with generator (`new` or `with-prompt`)
+- `[NAME]` = the name of file
+
+## Detail of `Hygen self generator`
+
+```file=_templates/generator/new/hello.ejs.t
+---
+to: _templates/<%= name %>/<%= action || 'new' %>/hello.ejs.t
+---
+---
+to: app/hello.js
+---
+const hello = "..."
+
+console.log(hello)
+```
+
+from content of file, I think you will know that `line: 1-3` are the target of generated file will be in `_templates/<%=name=%>/<%=action%>/hello.ejs.t`
+
+and the rest are content of the file
+
+## Edit Template
+
+In my use case, I want to create generator for markdown notes. I need to input file name (and dir) and want to generate file in `notes/filename.mdx`
