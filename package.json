@@ -29,5 +29,8 @@
   },
   "bugs": {
     "url": "https://github.com/ilumin/notes.ilumin.dev/issues"
+  },
+  "devDependencies": {
+    "hygen": "^6.0.4"
   }
 }
