@@ -65,4 +65,97 @@ and the rest are content of the file
 
 ## Edit Template
 
-In my use case, I want to create generator for markdown notes. I need to input file name (and dir) and want to generate file in `notes/filename.mdx`
+In my use case, I want to create generator for markdown notes. I need to input file name (and dir) and want to generate file in `notes/filename.mdx` with content like these:
+
+```mdx
+---
+title: <%= title %>
+created: <%= current_time %>
+modified: <%= current_time %>
+tags:
+  - <%= tags %>
+emoji: <%= emoji %>
+---
+```
+
+so, my template file will be
+
+```file=_templates/notes/new/note.ejs.t
+---
+to: notes/<%= filename %>.mdx
+unless_exists: true
+---
+<%
+current_time = new Date().toISOString()
+%>---
+title: <%= title %>
+emoji: <%= emoji %>
+created: <%= current_time %>
+modified: <%= current_time %>
+tags:
+<% tags.forEach(function(tag){ -%>  - <%= tag %>
+<% }) -%>
+---
+
+<!-- content -->
+```
+
+from above file
+generator will generate file at `notes/<%= filename %>.mdx` with condition `<%= filename %>.mdx` not exists
+
+but I also want prompt, so I should create `prompt.js`
+
+```file=_templates/notes/new/prompt.js
+module.exports = [
+  {
+    type: 'input',
+    name: 'filename',
+    message: "filename (without mdx):"
+  },
+  {
+    type: 'input',
+    name: 'title',
+    message: "title:"
+  },
+  {
+    type: 'list',
+    name: 'tags',
+    message: "tags (comma separate):"
+  },
+  {
+    type: 'input',
+    name: 'emoji',
+    message: "emoji:"
+  },
+]
+```
+
+to generate new note just use command
+
+```sh
+./node_modules/.bin/hygen notes new
+✔ filename (without mdx): · hygen-note
+✔ title: · Hygen Note
+✔ tags (comma seperate): · hygen, test
+✔ emoji: ·
+
+Loaded templates: _templates
+       added: notes/hygen-note.mdx
+```
+
+then Hygen will generate file `notes/hygen-note.mdx`
+with content
+
+```mdx
+---
+title: Hygen Note
+emoji:
+created: 2021-02-20T08:47:54.956Z
+modified: 2021-02-20T08:47:54.956Z
+tags:
+  - hygen
+  - test
+---
+
+<!-- content -->
+```

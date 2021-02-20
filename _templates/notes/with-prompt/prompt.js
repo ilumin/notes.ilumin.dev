@@ -1,10 +1,22 @@
-// see types of prompts:
-// https://github.com/enquirer/enquirer/tree/master/examples
-//
 module.exports = [
   {
-    type: 'input',
-    name: 'message',
-    message: "What's your message?"
-  }
-]
+    type: "input",
+    name: "filename",
+    message: "filename (without mdx):",
+  },
+  {
+    type: "input",
+    name: "title",
+    message: "title:",
+  },
+  {
+    type: "list",
+    name: "tags",
+    message: "tags (comma separate):",
+  },
+  {
+    type: "input",
+    name: "emoji",
+    message: "emoji:",
+  },
+];
