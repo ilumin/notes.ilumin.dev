@@ -1,0 +1,32 @@
+---
+title: Use config from NPM package
+emoji:
+created: 2021-02-22T07:47:01.039Z
+modified: 2021-02-22T07:47:01.039Z
+tags:
+  - npm
+  - package.json
+---
+
+We can use config from npm package
+
+```json
+{
+  "config": {
+    "ganache": {
+      "networkId": 5432,
+      "gasPrice": 25000000000,
+      "gasLimit": 6500000
+    }
+  },
+  "scripts": {
+    "ganache": "ganache-cli --networkId $npm_config_ganache_networkId --allowUnlimitedContractSize --gasLimit $npm_config_ganache_gasLimit -- gasPrice $npm_package_config_ganache_gasPrice"
+  }
+}
+```
+
+not just `package.json` we can use in our code too!
+
+```js
+const networkId process.env.npm_package_config_ganache_networkId
+```
