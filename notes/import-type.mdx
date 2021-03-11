@@ -1,0 +1,25 @@
+---
+title: You can use import type to import defined type
+emoji: 🥸
+created: 2021-03-11T12:16:07.356Z
+modified: 2021-03-11T12:16:07.356Z
+tags:
+  - typescript
+---
+
+In TypeScript we might need to import type and use it to build our type
+
+for example
+
+```jsx
+import React, { PropsWithChildren } from 'react'
+```
+
+But we can use `import type` so that build tools will remove `import type` line without ruining the output of code
+
+```jsx
+import React from 'react'
+import type { PropsWithChildren } from 'react'
+```
+
+I guess it will effect build performance too, just guess 🤔
