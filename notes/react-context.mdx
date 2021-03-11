@@ -33,7 +33,7 @@ tags:
 - มัน tight couple
   หมายความว่าพวก component ที่จะใช้ข้อมูลใน context จะต้องอยู่ภายใต้ context provider
 
-จากข้อเสีบ เราควรจะต้องพิจารณาว่า component ต่างๆมันมีความสัมพันธ์กันอย่างไร ถ้ามันไม่ได้ผูกกันมาก การใช้ context อาจจะทำให้ลำยากในการ maintain ดังนั้นอาจจะต้องพิจารณาใช้ solution อื่นมาแก้ปัญหา
+จากข้อเสีย เราควรจะต้องพิจารณาว่า component ต่างๆมันมีความสัมพันธ์กันอย่างไร ถ้ามันไม่ได้ผูกกันมาก การใช้ context อาจจะทำให้ลำยากในการ maintain ดังนั้นอาจจะต้องพิจารณาใช้ solution อื่นมาแก้ปัญหา
 
 ## Use Cases
 
@@ -137,7 +137,7 @@ function useCountDispatch() {
 export { CountProvider, useCountState, useCountDispatch };
 ```
 
-จากโค้ด จะเห็นว่าเวลาเอาไปใช้จะใช้ง่ายมากๆ เรียกได้ว่าเป็นขั้นกว่าของ context ปกคิ เพราะมีแค่ `CountProvider`, `useCountState`, `useCountDispatch` ให้ใช้
+จากโค้ด จะเห็นว่าเวลาเอาไปใช้จะใช้ง่ายมากๆ เรียกได้ว่าเป็นขั้นกว่าของ context ปกติ เพราะมีแค่ `CountProvider`, `useCountState`, `useCountDispatch` ให้ใช้
 
 ซึ่งถ้าเขียนแบบปกติจะเอาพวก mutation หรือ reducer ไปไว้ใน context value เลยซึ่งจะทำให้ยากในการใช้งานเนอะ และมันอยู่ร่วมกับพวก data
 
