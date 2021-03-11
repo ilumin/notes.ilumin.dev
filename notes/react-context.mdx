@@ -1,0 +1,149 @@
+---
+title: React Context
+emoji: 🤫
+created: 2021-02-24T09:59:08.453Z
+modified: 2021-02-24T09:59:08.453Z
+tags:
+  - react
+  - context
+  - hook
+---
+
+## Problems
+
+เวลาที่เราต้องการจะส่งข้อมูลไปให้ child component ใช้งาน
+มักจะเกิดปัญหาหลักๆคือ
+
+- props drillings
+  กรณีที่มี component หลายๆชั้น และมีแค่ชั้นสุดท้ายต้องการใช้ข้อมูล
+  ส่วนชั้นตรงกลางทำหน้าที่แค่รับ props เพื่อจะส่ง props ต่อไปเรื่อยๆ
+  ซึ่งจะทำให้ใช้งานยาก และ tight เกิน
+- too many props
+  มี props เยอะเกิ๊น ทำให้ใช้งานยาก
+
+## Pros / Cons
+
+ข้อดี
+
+- มันลดจำนวน props ที่จะต้องยัดเข้า component
+- มันเขียนง่ายกว่า redux
+
+ข้อเสีย
+
+- มัน tight couple
+  หมายความว่าพวก component ที่จะใช้ข้อมูลใน context จะต้องอยู่ภายใต้ context provider
+
+จากข้อเสีบ เราควรจะต้องพิจารณาว่า component ต่างๆมันมีความสัมพันธ์กันอย่างไร ถ้ามันไม่ได้ผูกกันมาก การใช้ context อาจจะทำให้ลำยากในการ maintain ดังนั้นอาจจะต้องพิจารณาใช้ solution อื่นมาแก้ปัญหา
+
+## Use Cases
+
+- theme
+- ...
+
+## Basic Usage
+
+มันทำอย่างไรนะ (จริงๆเรารู้วิธีและไอเดีย แต่ไม่เคยจำวิธีการเขียนได้เลย เลยต้องจดสักหน่อย)
+
+```jsx
+import { createContext, useContext } from "react";
+
+const themes = {
+  jedi: {
+    color: "#000",
+    background: "#fff",
+  },
+  sith: {
+    color: "#fff",
+    background: "#000",
+  },
+};
+
+const ThemeContext = createContext(themes.jedi);
+const ThemeProvider = ThemeContext.Provider;
+const useTheme = () => useContext(ThemeContext);
+
+export { ThemeProvider, useTheme };
+
+const App = () => {
+  const theme = useTheme();
+  return (
+    <div style={{ background: theme.background }}>
+      <h1 style={{ color: theme.color }}>Anakin SkyWalker</h1>
+    </div>
+  );
+};
+
+render(
+  <ThemeProvider value={themes.jedi}>
+    <App />
+  </ThemeProvider>
+);
+```
+
+จากตัวอย่างจะเห็นว่า `App` ผูกกับ `ThemeProvider` อย่างแยกไม่ออก
+เพราะถ้าแยกกัน เอา `App` ไปใช้ที่อื่นที่ไม่อยู่ภายใต้ `ThemeProvider` จะทำให้ใช้ `userTheme` ไม่ได้ (น่าจะ throw exception มั๊ง)
+
+และถ้าลองนึกออกไปไกลๆ เราก็จะสามารถทำ method ต่างๆที่เอาไว้ toggle theme ที่ context และทำ custom hook ให้ใช้ได้ง่ายๆ
+
+## Advance Usage
+
+[KCD](https://kentcdodds.com/blog/how-to-use-react-context-effectively) แนะนำว่าควรใช้ multiple context และใช้ร่วมกับ dispatch เพื่อให้ app มี effectively (หมายถึงการ maintain หรือป่าวนะ) โดย multiple context นี่คือแยกเป็น context ที่เก็บ data กับ context ที่ทำ dispatch
+
+```js
+// src/count-context.js
+import { createContext, useContext, useReducer } from "react";
+
+const CountStateContext = createContext();
+const CountDispatchContext = createContext();
+
+function countReducer(state, action) {
+  switch (action.type) {
+    case "increment":
+      return { count: state.count + 1 };
+    case "decrement":
+      return { count: state.count - 1 };
+    default:
+      throw new Error(`Unhandled action type: ${action.type}`);
+  }
+}
+
+function CountProvider({ children }) {
+  const [state, dispatch] = useReducer(countReducer, { count: 0 });
+  return (
+    <CountStateContext.Provider value={state}>
+      <CountDispatchContext.Provider value={dispatch}>
+        {children}
+      </CountDispatchContext.Provider>
+    </CountStateContext.Provider>
+  );
+}
+
+function useCountState() {
+  const context = useContext(CountStateContext);
+  if (context === undefined)
+    throw new Error(`useCountState must used within CountProvider`);
+
+  return context;
+}
+
+function useCountDispatch() {
+  const context = useContext(CountDispatchContext);
+  if (context === undefined)
+    throw new Error(`useCountDispatch must used within CountProvider`);
+
+  return context;
+}
+
+export { CountProvider, useCountState, useCountDispatch };
+```
+
+จากโค้ด จะเห็นว่าเวลาเอาไปใช้จะใช้ง่ายมากๆ เรียกได้ว่าเป็นขั้นกว่าของ context ปกคิ เพราะมีแค่ `CountProvider`, `useCountState`, `useCountDispatch` ให้ใช้
+
+ซึ่งถ้าเขียนแบบปกติจะเอาพวก mutation หรือ reducer ไปไว้ใน context value เลยซึ่งจะทำให้ยากในการใช้งานเนอะ และมันอยู่ร่วมกับพวก data
+
+## Captures
+
+- สร้าง React Context ด้วย `createContext`
+  - จะได้ `context.Provider` สำหรับเป็น provider component
+  - ได้ `context.Consumer` (ไม่ได้อธิบายในนี้เพราะค่อนข้างไม่จำเป็น ใช้ `userContext` อ่านง่ายกว่า) สำหรับดึงข้อมูลใน context มาใช้งาน
+  - สามารถใช้ `userContext()` เพื่อดึง context มาใช้งานได้
