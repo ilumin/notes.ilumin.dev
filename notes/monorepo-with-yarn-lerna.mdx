@@ -1,0 +1,276 @@
+---
+title: Build Monorepo with Yarn Workspaces and Lerna
+emoji: 🤩
+created: 2021-03-11T12:04:49.828Z
+modified: 2021-03-11T12:04:49.828Z
+tags:
+  - react
+  - monorepo
+  - yarn
+  - lerna
+  - storybook
+link: https://leerob.io/blog/monorepo-lerna-yarn-workspaces
+---
+
+## 1) create project
+
+```sh
+$ mkdir monorepo && cd monorepo
+$ yarn init -y
+$ npx lerna init
+$ tree
+
+.
+|_ lerna.json
+|_ package.json
+|_ packages/
+
+1 directory, 2 files
+```
+
+## 2) update lerna.json
+
+update `lerna.json`
+
+```json
+{
+  "packages": ["packages/*"],
+  "npmClient": "yarn",
+  "useWorkspaces": true,
+  "version": "indenpendent"
+}
+```
+
+**What happen?**
+
+- Use yarn as npm client
+- Use yarn workspaces
+
+## 3) update package.json
+
+update `package.json`
+
+```json
+{
+  ...
+  "private": true,
+  "workspaces": ["packages/*"],
+  ...
+}
+```
+
+**What happen?**
+
+- Use yarn workspaces
+- Add "private" since yarn force root workspaces to be private
+
+## 4) add .gitignore
+
+add `.gitignore`
+
+```
+.log
+.DS_Store
+.jest-\*
+Lib
+node_modules
+```
+
+## 5) add dependencies "babel"
+
+We won't use CRA for shared-component packages
+
+```sh
+$ yarn add -D -W \
+ @babel/cli @babel/core @babel/preset-react \
+ @babel/preset-env babel-core babel-loader \
+ babel-plugin-styled-components webpack
+```
+
+Add `babel.config.js`
+
+```js:babel.config.js
+module.exports = {
+  plugins: ['babel-plugin-styled-components'],
+  presets: ['@babel/preset-env', '@babel-preset/react']
+}
+```
+
+[6] add build script
+
+By update `package.json`
+
+```json
+{
+  ...
+  "scripts": {
+  "build": "lerna exec --parallel -- babel --root-mode upward src -d lib --ignore **/\*.story.{js,jsx,ts,tsx},**/\*.spec.{js,jsx,ts,tsx}"
+  },
+  ...
+}
+```
+
+**What happen?**
+
+- `lerna exec --parallel`Use lerna to execute command to all packages
+- `babel --root-mode upward src -d lib --ignore **/*.story.{js,jsx,ts,tsx},**/*.spec.{js,jsx,ts,tsx}`Babel run in parallel over every packages, pulling file from `/src` and compile into `/lib` and exclude storybook and jest
+- `--root-mode upward`tell babel that `node_modules` are located in the root
+
+**Note**
+You can try babel command on root project
+
+## 7) add dependency "react"
+
+```sh
+$ yarn add -D -W react react-dom styled-components
+```
+
+## 8) add first packages `button`
+
+```sh
+$ mkdir packages/button
+$ vim packages/button/package.json
+```
+
+add package for button `packages/button/package.json`
+
+```json
+{
+  "name": "button",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "module": "src/index.js",
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "styled-components": "latest"
+  },
+  "peerDependencies": {
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "styled-components": "^5.2.1"
+  }
+}
+```
+
+**What happen?**
+
+- In development env: module are in `src/index.js`
+- In babel: main file are in `lib/index.js`
+
+## 9) add bootstrap script
+
+Bootstrap script use to install dependencies and link into package, since yarn workspaces will use root node_modules as central packages
+
+update `package.json`
+
+```json
+{
+  ...
+  "scripts": {
+  "bootstrap": "lerna bootstrap --use-workspaces"
+  }
+  ...
+}
+```
+
+Then we can run `yarn bootstrap` to install and link packages
+
+## 10) add dependency "storybook"
+
+```sh
+$ yarn add -D -W @storybook/react @storybook/addon-docs \
+ @storybook/preset-create-react-app
+```
+
+Then add storybook config at `.storybook/main.js`
+
+```js
+module.exports = {
+  stories: ['../packages/**/*.story.js'],
+  addons: ['@storybook/addon-docs'],
+}
+```
+
+**What happen?**
+
+- It will use all story from every packages
+
+Then add script to start storybook by update `package.json`
+
+```json
+  ...
+  "scripts": {
+    "story": "start-storybook -p 5555"
+  }
+  ...
+```
+
+## 11) add storybook for button
+
+add `packages/button/Button.story.js`
+
+```jsx
+import React from 'react'
+import Button from '.'
+
+export default {
+  title: 'Shared-UI/Button',
+  component: Button,
+}
+
+export const primary = () => <Button>Button</Button>
+```
+
+Then run `yarn story`
+
+## 12) add dependencies "jest"
+
+```sh
+$ yarn add -D -W jest jest-styled-components \
+ babel-jest react-test-renderer jest-resolve \
+ Jest-haste-map
+```
+
+Then add jest config in `/jest.config.js`
+
+```js
+module.exports = {
+  cacheDirectory: '.jest-cache',
+  coverageDirectory: '.jest-coverage',
+  coveragePathIgnorePatterns: ['<rootDir>/packages/(?:.+?)/lib'],
+  coverageReporters: ['html', 'text'],
+  coverageThreshold: {
+    global: {
+      branches: 100,
+      functions: 100,
+      lines: 100,
+      statements: 100,
+    },
+  },
+  testPathIgnorePatterns: ['<rootDir>/packages/(?:.+?)/lib'],
+}
+```
+
+Then add script for test by update `package.json`
+
+```json
+"scripts": {
+  "coverage": "jest --coverage",
+  "unit": "jest"
+}
+```
+
+**Note**
+
+- You need to push repo before release
+- Release npx lerna changed
+- See diff npx lerna diff
+- Bump npx lerna version
+
+---
+
+What he missing ?
+
+- How to dev main packages in this repo
+- How to import local packages
